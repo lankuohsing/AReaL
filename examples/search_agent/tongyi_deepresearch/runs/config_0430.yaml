@@ -1,0 +1,206 @@
+experiment_name: tongyi-deepresearch
+trial_name: trial0
+
+cluster:
+  fileroot: /gpu-nas/experiment_workspace/zhangxuanyu/AReaL-main/outputs/20260509_deepsearch
+  n_nodes: 1
+  n_gpus_per_node: 8
+  name_resolve:
+    type: nfs
+    nfs_record_root: /gpu-nas/experiment_workspace/zhangxuanyu/AReaL-main/outputs/20260509_deepsearch
+seed: 1
+enable_offload: false
+total_train_epochs: 1
+total_train_steps: null
+tokenizer_path: ${actor.path}
+
+scheduler:
+  type: local
+
+rollout:
+  backend: "sglang:d4p1t1"
+  experiment_name: ${experiment_name}
+  trial_name: ${trial_name}
+  # 与 actor 同机时过高并发易挤占显存；OOM 后进程强杀会连带取消 rollout 上未完成的 judge（CancelledError）。
+  max_concurrent_rollouts: 4
+  queue_size: null
+  consumer_batch_size: ${train_dataset.batch_size}
+  max_head_offpolicyness: 4
+  enable_rollout_tracing: false
+  scheduling_spec: ${actor.scheduling_spec}
+  fileroot: ${cluster.fileroot}
+  tokenizer_path: ${tokenizer_path}
+  # 关闭可显著减少磁盘 I/O；需要与框架 rollout/*.jsonl 对齐排错时再开 true。
+  dump_to_file: false
+
+gconfig:
+  # 不改 batch_size 时，用 n_samples 降低每步 PPO 聚合量以缓解 backward OOM。
+  n_samples: 8
+  # 多轮轨迹总 token 上限；AReaL OpenAI 兼容路径会把该值传入
+  # GenerationHyperparameters.max_tokens，避免回落到框架默认 32768。
+  max_tokens: 40960
+  min_new_tokens: 0
+  # 降低单轮生成长度，减缓多轮轨迹的上下文膨胀速度。
+  max_new_tokens: 1024
+  greedy: false
+  temperature: 1.0
+  top_p: 0.95
+
+# Validation rollout: must match evaluator-driven group_size (eval_gconfig.n_samples in rl_trainer).
+eval_gconfig:
+  n_samples: 1
+  max_tokens: ${gconfig.max_tokens}
+  min_new_tokens: ${gconfig.min_new_tokens}
+  max_new_tokens: ${gconfig.max_new_tokens}
+  greedy: true
+  temperature: 0.0
+  top_p: 1.0
+
+actor:
+  backend: "fsdp:d4p1t1"
+  experiment_name: ${experiment_name}
+  trial_name: ${trial_name}
+  path: /gpu-nas/share_models/qwen_models/Qwen3-8B
+  init_from_scratch: false
+  disable_dropout: true
+  gradient_checkpointing: true
+  dtype: bfloat16
+  mb_spec:
+    # 须 ≥ 任意一条样本的 packed 序列长度（seqpack 单条不能超过 capacity）。与下方 sglang.context_length 一致。
+    max_tokens_per_mb: 40960
+  # False：不按 mb 上界整块 padding，显著降低激活显存（默认即为 False）。
+  pad_to_maximum: false
+  optimizer:
+    type: adam
+    lr: 3e-6
+    weight_decay: 0.003
+    beta1: 0.9
+    beta2: 0.999
+    eps: 1e-8
+    lr_scheduler_type: constant
+    gradient_clipping: 1.0
+    warmup_steps_proportion: 0.001
+  adv_norm:
+    mean_level: batch
+    std_level: batch
+  eps_clip: 0.2
+  temperature: ${gconfig.temperature}
+  reward_scaling: 5.0
+  reward_bias: -0.5
+  # KL(ref) 系数；0 为关闭。
+  kl_ctl: 0.01
+  # 须 ≤ 每 actor rank 上的轨迹条数（例：batch_size×n_samples / dp ≈ 4×8/4=8），否则会报 min_groups 错误。
+  ppo_n_minibatches: 8
+  recompute_logprob: true
+  use_decoupled_loss: true
+  behave_imp_weight_cap: 5.0
+  scheduling_spec:
+    - task_type: worker
+      port_count: 2
+      gpu: 1
+      mem: 32
+      cmd: python3 -m areal.infra.rpc.rpc_server
+      env_vars:
+        PYTORCH_CUDA_ALLOC_CONF: "expandable_segments:True"
+
+ref:
+  backend: ${actor.backend}
+  experiment_name: ${experiment_name}
+  trial_name: ${trial_name}
+  path: ${actor.path}
+  init_from_scratch: false
+  dtype: ${actor.dtype}
+  # 与 actor.mb_spec 保持一致，否则 ref 上 compute_logp 仍会触发 capacity。
+  mb_spec:
+    max_tokens_per_mb: 40960
+  optimizer: null
+  scheduling_strategy:
+    type: colocation
+    target: actor
+    fork: false
+  scheduling_spec: ${actor.scheduling_spec}
+
+# SGLang
+sglang:
+  model_path: ${actor.path}
+  random_seed: ${seed}
+  skip_tokenizer_init: false
+  dtype: ${actor.dtype}
+  # 提高 SGLang 并发请求上限，利于多路 rollout（OOM 时可调回 null 或减小）。
+  max_running_requests: 32
+  # 与 actor.mb_spec.max_tokens_per_mb 一致，避免推理上下文 > 训练 capacity。
+  context_length: 40960
+  mem_fraction_static: 0.9
+  attention_backend: fa3
+
+vllm:
+  model: ${actor.path}
+  seed: ${seed}
+  skip_tokenizer_init: false
+  dtype: ${actor.dtype}
+  max_model_len: 40960
+  gpu_memory_utilization: 0.9
+
+# datasets
+train_dataset:
+  batch_size: 4
+  shuffle: true
+  pin_memory: true
+  type: rl
+  path: /gpu-nas/experiment_workspace/zhangxuanyu/AReaL-main/examples/search_agent/tongyi_deepresearch_copy/datas/finsearch_data/train/data.jsonl
+
+valid_dataset:
+  batch_size: 4
+  pin_memory: true
+  type: rl
+  path: /gpu-nas/experiment_workspace/zhangxuanyu/AReaL-main/examples/search_agent/tongyi_deepresearch_copy/datas/finsearch_data/val/data.jsonl
+
+# Utilities
+saver:
+  experiment_name: ${experiment_name}
+  trial_name: ${trial_name}
+  fileroot: ${cluster.fileroot}
+  freq_epochs: 1
+  freq_steps: 100
+  freq_secs: null
+
+
+recover:
+  experiment_name: ${experiment_name}
+  trial_name: ${trial_name}
+  fileroot: ${cluster.fileroot}
+  mode: auto
+  freq_epochs: null
+  freq_steps: 50
+  freq_secs: null
+
+evaluator:
+  experiment_name: ${experiment_name}
+  trial_name: ${trial_name}
+  fileroot: ${cluster.fileroot}
+  freq_epochs: null
+  # Run validation every freq_steps training steps (see EpochStepTimeFreqCtl in areal/utils/evaluator.py).
+  freq_steps: 50
+  freq_secs: null
+
+stats_logger:
+  experiment_name: ${experiment_name}
+  trial_name: ${trial_name}
+  fileroot: ${cluster.fileroot}
+  wandb:
+    mode: disabled
+  tensorboard:
+    path: ${cluster.fileroot}/tensorboard
+
+perf_tracer:
+  experiment_name: ${experiment_name}
+  trial_name: ${trial_name}
+  fileroot: ${cluster.fileroot}
+  enabled: false
+  session_tracer:
+    enabled: false
+
+max_llm_calls_per_run: 8
+# 单轮 search 截断；进一步收紧以降低上下文超限与显存峰值风险。
+search_tool_response_max_tokens: 18000
+log_agent_stats: false
