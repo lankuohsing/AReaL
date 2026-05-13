@@ -11,11 +11,11 @@ eval_workflow: ${workflow}
 
 cluster:
   n_nodes: 1
-  n_gpus_per_node: 8
-  fileroot: /tmp/areal/experiments
+  n_gpus_per_node: 4
+  fileroot: /gpu-nas/experiment_workspace/languoxing/outputs/areal/experiments
   name_resolve:
     type: nfs
-    nfs_record_root: /tmp/areal/name_resolve
+    nfs_record_root: /gpu-nas/experiment_workspace/languoxing/outputs/areal/name_resolve
 
 allocation_mode: sglang:d4p1t1+d4p1t1
 
@@ -52,7 +52,7 @@ gconfig:
 actor:
   experiment_name: ${experiment_name}
   trial_name: ${trial_name}
-  path: Qwen/Qwen2.5-1.5B-Instruct
+  path: /gpu-nas/experiment_workspace/languoxing/models/Qwen3-0.6B
   init_from_scratch: false
   disable_dropout: true
   gradient_checkpointing: true
