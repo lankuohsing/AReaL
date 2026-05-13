@@ -11,7 +11,8 @@
         "justMyCode": false,
         "subProcess": true,
         "env": {
-          "CUDA_VISIBLE_DEVICES": "0"
+          "CUDA_VISIBLE_DEVICES": "0",
+          "PYTHONPATH": "${workspaceFolder}"
         },
         "args": [
           "--config",
