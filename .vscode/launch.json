@@ -1,0 +1,28 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+      {
+        "name": "AReaL: agent_workflow (debug)",
+        "type": "debugpy",
+        "request": "launch",
+        "program": "${workspaceFolder}/examples/agent_workflow/train.py",
+        "cwd": "${workspaceFolder}",
+        "console": "integratedTerminal",
+        "justMyCode": false,
+        "subProcess": true,
+        "env": {
+          "CUDA_VISIBLE_DEVICES": "0"
+        },
+        "args": [
+          "--config",
+          "examples/agent_workflow/config.yaml",
+          "scheduler.type=local",
+          "cluster.n_gpus_per_node=1",
+          "allocation_mode=sglang:d1p1t1+d1p1t1",
+          "total_train_epochs=1",
+          "rollout.max_concurrent_rollouts=2",
+          "train_dataset.batch_size=1"
+        ]
+      }
+    ]
+  }
