@@ -144,7 +144,7 @@ train_dataset:
   shuffle: true
   pin_memory: true
   num_workers: 4
-  path: /gpu-nas/experiment_workspace/languoxing/datasets/rl/gsm8k
+  path: /gpu-nas/experiment_workspace/languoxing/datasets/gsm8k
   type: rl
   max_length: 1024
 
@@ -152,7 +152,7 @@ valid_dataset:
   batch_size: 256
   pin_memory: true
   num_workers: 4
-  path: openai/gsm8k
+  path: /gpu-nas/experiment_workspace/languoxing/datasets/gsm8k
   type: rl
 
 # Utilities
