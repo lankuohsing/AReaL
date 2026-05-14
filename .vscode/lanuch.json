@@ -1,0 +1,23 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+      {
+        "name": "AReaL: agent_workflow (debug)",
+        "type": "debugpy",
+        "request": "launch",
+        "program": "${workspaceFolder}/examples/agent_workflow/train.py",
+        "cwd": "${workspaceFolder}",
+        "console": "integratedTerminal",
+        "justMyCode": false,
+        "subProcess": true,
+        "env": {
+          "PYTHONPATH": "${workspaceFolder}"
+        },
+        "args": [
+          "--config",
+          "examples/agent_workflow/config.yaml",
+          "scheduler.type=local"
+        ]
+      }
+    ]
+  }

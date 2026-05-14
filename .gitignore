@@ -198,7 +198,7 @@ api_key.json
 *.pdf
 *.swp
 
-.vscode/
+# .vscode/
 wandb/
 outputs/
 sympy/

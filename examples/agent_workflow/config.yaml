@@ -11,18 +11,18 @@ eval_workflow: ${workflow}
 
 cluster:
   n_nodes: 1
-  n_gpus_per_node: 8
-  fileroot: /tmp/areal/experiments
+  n_gpus_per_node: 2
+  fileroot: /gpu-nas/experiment_workspace/languoxing/outputs/areal/experiments
   name_resolve:
     type: nfs
-    nfs_record_root: /tmp/areal/name_resolve
+    nfs_record_root: /gpu-nas/experiment_workspace/languoxing/outputs/areal/name_resolve
 
+allocation_mode: sglang:d4p1t1+d4p1t1
 
 scheduler:
   type: null
 
 rollout:
-  backend: "sglang:d4p1t1"
   experiment_name: ${experiment_name}
   trial_name: ${trial_name}
   fileroot: ${cluster.fileroot}
@@ -34,7 +34,7 @@ rollout:
   enable_rollout_tracing: false
   scheduling_spec: ${actor.scheduling_spec}
   dump_to_file: true
-  agent:
+  openai:
     mode: inline
     tool_call_parser: qwen25
     reasoning_parser: qwen3
@@ -50,10 +50,9 @@ gconfig:
   temperature: 1.0
 
 actor:
-  backend: "fsdp:d4p1t1"
   experiment_name: ${experiment_name}
   trial_name: ${trial_name}
-  path: Qwen/Qwen2.5-1.5B-Instruct
+  path: /gpu-nas/experiment_workspace/languoxing/models/Qwen3-0.6B
   init_from_scratch: false
   disable_dropout: true
   gradient_checkpointing: true
@@ -78,9 +77,7 @@ actor:
   ppo_n_minibatches: 1
   recompute_logprob: true
   use_decoupled_loss: true
-  rejection_sampling:
-    metric: ratio
-    upper: 5.0
+  behave_imp_weight_cap: 5.0
   reward_norm: null
   adv_norm:
     mean_level: batch
@@ -109,7 +106,6 @@ actor:
         PYTORCH_NPU_ALLOC_CONF: "expandable_segments:True"
 
 ref:
-  backend: ${actor.backend}
   experiment_name: ${experiment_name}
   trial_name: ${trial_name}
   path: ${actor.path}
@@ -148,7 +144,7 @@ train_dataset:
   shuffle: true
   pin_memory: true
   num_workers: 4
-  path: openai/gsm8k
+  path: /gpu-nas/experiment_workspace/languoxing/datasets/gsm8k
   type: rl
   max_length: 1024
 
@@ -156,7 +152,7 @@ valid_dataset:
   batch_size: 256
   pin_memory: true
   num_workers: 4
-  path: openai/gsm8k
+  path: /gpu-nas/experiment_workspace/languoxing/datasets/gsm8k
   type: rl
 
 # Utilities
