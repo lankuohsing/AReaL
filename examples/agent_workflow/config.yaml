@@ -23,6 +23,7 @@ scheduler:
   type: null
 
 rollout:
+  backend: "sglang:d4p1t1"
   experiment_name: ${experiment_name}
   trial_name: ${trial_name}
   fileroot: ${cluster.fileroot}
@@ -34,7 +35,7 @@ rollout:
   enable_rollout_tracing: false
   scheduling_spec: ${actor.scheduling_spec}
   dump_to_file: true
-  openai:
+  agent:
     mode: inline
     tool_call_parser: qwen25
     reasoning_parser: qwen3
@@ -50,6 +51,7 @@ gconfig:
   temperature: 1.0
 
 actor:
+  backend: "fsdp:d4p1t1"
   experiment_name: ${experiment_name}
   trial_name: ${trial_name}
   path: /gpu-nas/experiment_workspace/languoxing/models/Qwen3-0.6B
@@ -108,6 +110,7 @@ actor:
         PYTORCH_NPU_ALLOC_CONF: "expandable_segments:True"
 
 ref:
+  backend: ${actor.backend}
   experiment_name: ${experiment_name}
   trial_name: ${trial_name}
   path: ${actor.path}
