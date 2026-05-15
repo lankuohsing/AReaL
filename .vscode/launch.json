@@ -1,23 +1,72 @@
 {
-    "version": "0.2.0",
-    "configurations": [
-      {
-        "name": "AReaL: agent_workflow (debug)",
-        "type": "debugpy",
-        "request": "launch",
-        "program": "${workspaceFolder}/examples/agent_workflow/train.py",
-        "cwd": "${workspaceFolder}",
-        "console": "integratedTerminal",
-        "justMyCode": false,
-        "subProcess": true,
-        "env": {
-          "PYTHONPATH": "${workspaceFolder}"
-        },
-        "args": [
-          "--config",
-          "examples/agent_workflow/config.yaml",
-          "scheduler.type=local"
-        ]
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "AReaL: agent_workflow (main only)",
+      "type": "debugpy",
+      "request": "launch",
+      "program": "${workspaceFolder}/examples/agent_workflow/train.py",
+      "cwd": "${workspaceFolder}",
+      "console": "integratedTerminal",
+      "justMyCode": false,
+      "subProcess": false,
+      "env": {
+        "PYTHONPATH": "${workspaceFolder}",
+        "PYTHONUNBUFFERED": "1"
+      },
+      "args": [
+        "--config",
+        "examples/agent_workflow/config.yaml",
+        "scheduler.type=local"
+      ]
+    },
+    {
+      "name": "AReaL: agent_workflow (main, debug config)",
+      "type": "debugpy",
+      "request": "launch",
+      "program": "${workspaceFolder}/examples/agent_workflow/train.py",
+      "cwd": "${workspaceFolder}",
+      "console": "integratedTerminal",
+      "justMyCode": false,
+      "subProcess": false,
+      "env": {
+        "PYTHONPATH": "${workspaceFolder}",
+        "PYTHONUNBUFFERED": "1"
+      },
+      "args": [
+        "--config",
+        "examples/agent_workflow/config.debug.yaml",
+        "scheduler.type=local"
+      ]
+    },
+    {
+      "name": "AReaL: Attach rollout worker :5678",
+      "type": "debugpy",
+      "request": "attach",
+      "connect": {
+        "host": "127.0.0.1",
+        "port": 5678
+      },
+      "pathMappings": [
+        {
+          "localRoot": "${workspaceFolder}",
+          "remoteRoot": "${workspaceFolder}"
+        }
+      ],
+      "justMyCode": false
+    }
+  ],
+  "compounds": [
+    {
+      "name": "AReaL: agent_workflow (main + rollout worker)",
+      "configurations": [
+        "AReaL: Attach rollout worker :5678",
+        "AReaL: agent_workflow (main, debug config)"
+      ],
+      "stopAll": true,
+      "presentation": {
+        "order": 1
       }
-    ]
-  }
+    }
+  ]
+}
