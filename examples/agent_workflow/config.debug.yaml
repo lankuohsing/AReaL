@@ -1,4 +1,4 @@
-# Debug config for VS Code: rollout worker listens on debugpy port 5678 (see .vscode/launch.json).
+# Debug config: rollout worker runs debugpy on 0.0.0.0:5678 (no --wait-for-client — train can proceed; attach anytime).
 # Copy of config.yaml with smaller batch and separate rollout scheduling_spec (no YAML inheritance).
 
 experiment_name: gsm8k-grpo
@@ -40,7 +40,7 @@ rollout:
     - task_type: worker
       port_count: 2
       gpu: 1
-      cmd: python3 -m debugpy --listen 0.0.0.0:5678 --wait-for-client -m areal.infra.rpc.rpc_server
+      cmd: python3 -m debugpy --listen 0.0.0.0:5678 -m areal.infra.rpc.rpc_server
       env_vars: {}
   dump_to_file: true
   agent:

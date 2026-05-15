@@ -55,18 +55,5 @@
       ],
       "justMyCode": false
     }
-  ],
-  "compounds": [
-    {
-      "name": "AReaL: agent_workflow (main + rollout worker)",
-      "configurations": [
-        "AReaL: Attach rollout worker :5678",
-        "AReaL: agent_workflow (main, debug config)"
-      ],
-      "stopAll": true,
-      "presentation": {
-        "order": 1
-      }
-    }
   ]
 }
