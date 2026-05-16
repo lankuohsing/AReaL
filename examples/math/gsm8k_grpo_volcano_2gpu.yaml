@@ -179,6 +179,9 @@ stats_logger:
   fileroot: ${cluster.fileroot}
   wandb:
     mode: disabled
+  tensorboard:
+    # 非 null 即启用；训练时由 StatsLogger 写入标量指标
+    path: ${cluster.fileroot}/tensorboard/${experiment_name}/${trial_name}
 
 perf_tracer:
   experiment_name: ${experiment_name}
