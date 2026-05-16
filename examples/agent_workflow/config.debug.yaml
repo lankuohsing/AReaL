@@ -40,8 +40,9 @@ rollout:
     - task_type: worker
       port_count: 2
       gpu: 1
-      cmd: python3 -m debugpy --listen 0.0.0.0:5678 -m areal.infra.rpc.rpc_server
-      env_vars: {}
+      cmd: python3 -m areal.infra.rpc.rpc_server
+      env_vars:
+        AREAL_DEBUGPY_PORT: "5678"
   dump_to_file: true
   agent:
     mode: inline

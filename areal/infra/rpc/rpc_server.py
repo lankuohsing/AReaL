@@ -15,6 +15,7 @@ Usage::
 from __future__ import annotations
 
 import logging as stdlib_logging
+import os
 
 from areal.infra.rpc.guard.app import (
     GuardState,
@@ -30,7 +31,20 @@ from areal.utils import logging, perf_tracer
 logger = logging.getLogger("SyncRPCServer")
 
 
+def _maybe_enable_debugpy() -> None:
+    port_str = os.environ.get("AREAL_DEBUGPY_PORT", "").strip()
+    if not port_str:
+        return
+    import debugpy
+
+    port = int(port_str)
+    debugpy.listen(("0.0.0.0", port))
+    logger.info("debugpy listening on 0.0.0.0:%s (attach from VS Code)", port)
+
+
 def main():
+    _maybe_enable_debugpy()
+
     parser = make_base_parser(
         description="AReaL Sync RPC Server for TrainEngine/InferenceEngine"
     )
