@@ -16,6 +16,7 @@ from __future__ import annotations
 
 import logging as stdlib_logging
 import os
+import sys
 
 from areal.infra.rpc.guard.app import (
     GuardState,
@@ -31,9 +32,26 @@ from areal.utils import logging, perf_tracer
 logger = logging.getLogger("SyncRPCServer")
 
 
+def _worker_role_from_argv() -> str | None:
+    argv = sys.argv
+    for i, arg in enumerate(argv):
+        if arg == "--role" and i + 1 < len(argv):
+            return argv[i + 1]
+    return None
+
+
 def _maybe_enable_debugpy() -> None:
     port_str = os.environ.get("AREAL_DEBUGPY_PORT", "").strip()
     if not port_str:
+        return
+    # Forked workers (e.g. eval-rollout) inherit AREAL_DEBUGPY_PORT from the parent
+    # rollout process; only the primary rollout RPC server should bind the port.
+    role = _worker_role_from_argv()
+    if role is not None and role != "rollout":
+        logger.info(
+            "Skipping debugpy for role %r (AREAL_DEBUGPY_PORT is set on parent only)",
+            role,
+        )
         return
     import debugpy
 
