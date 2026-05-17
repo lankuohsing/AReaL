@@ -1,3 +1,6 @@
+from areal.api.cli_args import GenerationHyperparameters
+
+
 import sys
 
 from areal import PPOTrainer
@@ -20,8 +23,8 @@ def main(args):
         dataset_config=config.valid_dataset,
         tokenizer=tokenizer,
     )
-
-    workflow_kwargs = dict(
+    # 字符串形式的 reward_fn：因为 workflow 在子进程里创建，用路径字符串方便 import，而不是在主进程里写 from areal.reward.gsm8k import gsm8k_reward_fn 再传函数对象（跨进程传 callable 更麻烦）。
+    workflow_kwargs = dict[str, str | GenerationHyperparameters | bool](
         reward_fn="areal.reward.gsm8k.gsm8k_reward_fn",
         gconfig=config.gconfig,
         tokenizer=config.tokenizer_path,

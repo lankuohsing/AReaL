@@ -1,5 +1,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
+import importlib
+import os
 import uuid
 from collections.abc import Callable
 from typing import Any
@@ -139,6 +141,18 @@ class RLVRWorkflow(RolloutWorkflow):
     async def arun_episode(
         self, engine: InferenceEngine, data: dict[str, Any]
     ) -> dict[str, torch.Tensor]:
+        # Optional rollout-worker debug hook:
+        # when AREAL_DEBUG_ROLLOUT=1, the first episode waits for an attach debugger.
+        if os.getenv("AREAL_DEBUG_ROLLOUT") == "1":
+            if not getattr(self, "_debugpy_ready", False):
+                debugpy = importlib.import_module("debugpy")
+                debugpy.listen(("0.0.0.0", 5678))
+                logger.warning(
+                    "RLVRWorkflow waiting for debugger attach on 0.0.0.0:5678"
+                )
+                debugpy.wait_for_client()
+                self._debugpy_ready = True
+
         # NOTE: load reward function dynamically if given as string
         if isinstance(self.reward_fn, str):
             self.reward_fn = import_from_string(self.reward_fn)
