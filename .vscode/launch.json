@@ -17,6 +17,7 @@
       "env": {
         "CUDA_VISIBLE_DEVICES": "0,1",
         "AREAL_DEBUG_ROLLOUT": "1",
+        "AREAL_DEBUG_ROLLOUT_PORT": "5678",
         "PYTHONPATH": "${workspaceFolder}:${env:PYTHONPATH}",
         "PYTHONUNBUFFERED": "1"
       }
@@ -40,6 +41,7 @@
       "env": {
         "CUDA_VISIBLE_DEVICES": "0,1",
         "AREAL_DEBUG_ROLLOUT": "1",
+        "AREAL_DEBUG_ROLLOUT_PORT": "5678",
         "PYTHONPATH": "${workspaceFolder}:${env:PYTHONPATH}",
         "PYTHONUNBUFFERED": "1"
       }
@@ -61,6 +63,7 @@
       "env": {
         "CUDA_VISIBLE_DEVICES": "0,1",
         "AREAL_DEBUG_ROLLOUT": "1",
+        "AREAL_DEBUG_ROLLOUT_PORT": "5678",
         "PYTHONPATH": "${workspaceFolder}:${env:PYTHONPATH}",
         "PYTHONUNBUFFERED": "1"
       }
@@ -71,7 +74,10 @@
       "request": "attach",
       "connect": {
         "host": "127.0.0.1",
-        "port": 5678
+        "port": "${env:AREAL_DEBUG_ROLLOUT_PORT}"
+      },
+      "env": {
+        "AREAL_DEBUG_ROLLOUT_PORT": "5678"
       },
       "justMyCode": false
     }

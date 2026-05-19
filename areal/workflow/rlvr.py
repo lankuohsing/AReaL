@@ -35,22 +35,38 @@ _rollout_debugpy_listening = False
 _rollout_debugpy_client_ready = False
 
 
+def _rollout_debugpy_port() -> int:
+    return int(os.getenv("AREAL_DEBUG_ROLLOUT_PORT", "5678"))
+
+
 def _maybe_wait_for_rollout_debugger() -> None:
     """Wait once per process for VS Code attach when AREAL_DEBUG_ROLLOUT=1."""
     global _rollout_debugpy_listening, _rollout_debugpy_client_ready
     if os.getenv("AREAL_DEBUG_ROLLOUT") != "1" or _rollout_debugpy_client_ready:
         return
 
+    port = _rollout_debugpy_port()
     debugpy = importlib.import_module("debugpy")
     if not _rollout_debugpy_listening:
         try:
-            debugpy.listen(("0.0.0.0", 5678))
+            debugpy.listen(("0.0.0.0", port))
         except RuntimeError as exc:
             if "already been called" not in str(exc):
                 raise
+        except OSError as exc:
+            logger.error(
+                "debugpy cannot bind to 0.0.0.0:%s (%s). "
+                "Port may be in use by a leftover rollout worker; "
+                "run `ss -lntp | grep %s` and kill the process, "
+                "or set AREAL_DEBUG_ROLLOUT_PORT to another port in launch.json.",
+                port,
+                exc,
+                port,
+            )
+            raise
         _rollout_debugpy_listening = True
         logger.warning(
-            "RLVRWorkflow waiting for debugger attach on 0.0.0.0:5678"
+            "RLVRWorkflow waiting for debugger attach on 0.0.0.0:%s", port
         )
 
     debugpy.wait_for_client()
