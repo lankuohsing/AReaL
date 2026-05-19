@@ -35,7 +35,7 @@
         "examples/math/gsm8k_grpo_volcano_2gpu.yaml",
         "train_dataset.batch_size=1",
         "gconfig.n_samples=1",
-        "total_train_steps=1"
+        "+total_train_steps=1"
       ],
       "env": {
         "CUDA_VISIBLE_DEVICES": "0,1",
@@ -56,7 +56,7 @@
       "args": [
         "--config",
         "examples/math/gsm8k_grpo_volcano_2gpu.yaml",
-        "total_train_steps=4"
+        "+total_train_steps=4"
       ],
       "env": {
         "CUDA_VISIBLE_DEVICES": "0,1",
