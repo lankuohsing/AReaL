@@ -29,6 +29,33 @@ from areal.utils.perf_tracer import (
 
 logger = logging.getLogger("RLVRWorkflow")
 
+# Process-level: each submit creates a new RLVRWorkflow instance, but debugpy.listen()
+# may only be called once per rollout worker process.
+_rollout_debugpy_listening = False
+_rollout_debugpy_client_ready = False
+
+
+def _maybe_wait_for_rollout_debugger() -> None:
+    """Wait once per process for VS Code attach when AREAL_DEBUG_ROLLOUT=1."""
+    global _rollout_debugpy_listening, _rollout_debugpy_client_ready
+    if os.getenv("AREAL_DEBUG_ROLLOUT") != "1" or _rollout_debugpy_client_ready:
+        return
+
+    debugpy = importlib.import_module("debugpy")
+    if not _rollout_debugpy_listening:
+        try:
+            debugpy.listen(("0.0.0.0", 5678))
+        except RuntimeError as exc:
+            if "already been called" not in str(exc):
+                raise
+        _rollout_debugpy_listening = True
+        logger.warning(
+            "RLVRWorkflow waiting for debugger attach on 0.0.0.0:5678"
+        )
+
+    debugpy.wait_for_client()
+    _rollout_debugpy_client_ready = True
+
 
 def default_get_input_ids_fn(
     data: Any,
@@ -141,17 +168,7 @@ class RLVRWorkflow(RolloutWorkflow):
     async def arun_episode(
         self, engine: InferenceEngine, data: dict[str, Any]
     ) -> dict[str, torch.Tensor]:
-        # Optional rollout-worker debug hook:
-        # when AREAL_DEBUG_ROLLOUT=1, the first episode waits for an attach debugger.
-        if os.getenv("AREAL_DEBUG_ROLLOUT") == "1":
-            if not getattr(self, "_debugpy_ready", False):
-                debugpy = importlib.import_module("debugpy")
-                debugpy.listen(("0.0.0.0", 5678))
-                logger.warning(
-                    "RLVRWorkflow waiting for debugger attach on 0.0.0.0:5678"
-                )
-                debugpy.wait_for_client()
-                self._debugpy_ready = True
+        _maybe_wait_for_rollout_debugger()
 
         # NOTE: load reward function dynamically if given as string
         if isinstance(self.reward_fn, str):
