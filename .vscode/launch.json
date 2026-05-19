@@ -17,7 +17,7 @@
       "env": {
         "CUDA_VISIBLE_DEVICES": "0,1",
         "AREAL_DEBUG_ROLLOUT": "1",
-        "AREAL_DEBUG_ROLLOUT_PORT": "5678",
+        "AREAL_DEBUG_ROLLOUT_PORT": "${config:areal.rolloutDebugPort}",
         "PYTHONPATH": "${workspaceFolder}:${env:PYTHONPATH}",
         "PYTHONUNBUFFERED": "1"
       }
@@ -41,7 +41,7 @@
       "env": {
         "CUDA_VISIBLE_DEVICES": "0,1",
         "AREAL_DEBUG_ROLLOUT": "1",
-        "AREAL_DEBUG_ROLLOUT_PORT": "5678",
+        "AREAL_DEBUG_ROLLOUT_PORT": "${config:areal.rolloutDebugPort}",
         "PYTHONPATH": "${workspaceFolder}:${env:PYTHONPATH}",
         "PYTHONUNBUFFERED": "1"
       }
@@ -63,18 +63,18 @@
       "env": {
         "CUDA_VISIBLE_DEVICES": "0,1",
         "AREAL_DEBUG_ROLLOUT": "1",
-        "AREAL_DEBUG_ROLLOUT_PORT": "5678",
+        "AREAL_DEBUG_ROLLOUT_PORT": "${config:areal.rolloutDebugPort}",
         "PYTHONPATH": "${workspaceFolder}:${env:PYTHONPATH}",
         "PYTHONUNBUFFERED": "1"
       }
     },
     {
-      "name": "Attach Rollout Worker (5678)",
+      "name": "Attach Rollout Worker",
       "type": "debugpy",
       "request": "attach",
       "connect": {
         "host": "127.0.0.1",
-        "port": 5678
+        "port": "${config:areal.rolloutDebugPort}"
       },
       "justMyCode": false
     }
