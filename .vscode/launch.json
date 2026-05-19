@@ -74,10 +74,7 @@
       "request": "attach",
       "connect": {
         "host": "127.0.0.1",
-        "port": "${env:AREAL_DEBUG_ROLLOUT_PORT}"
-      },
-      "env": {
-        "AREAL_DEBUG_ROLLOUT_PORT": "5678"
+        "port": 5678
       },
       "justMyCode": false
     }
