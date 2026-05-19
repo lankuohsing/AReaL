@@ -22,6 +22,29 @@
       }
     },
     {
+      "name": "GSM8K GRPO (Volcano 2GPU, debug 1 sample)",
+      "type": "debugpy",
+      "request": "launch",
+      "program": "${workspaceFolder}/examples/math/gsm8k_rl.py",
+      "cwd": "${workspaceFolder}",
+      "console": "integratedTerminal",
+      "justMyCode": false,
+      "subProcess": true,
+      "args": [
+        "--config",
+        "examples/math/gsm8k_grpo_volcano_2gpu.yaml",
+        "train_dataset.batch_size=1",
+        "gconfig.n_samples=1",
+        "total_train_steps=1"
+      ],
+      "env": {
+        "CUDA_VISIBLE_DEVICES": "0,1",
+        "AREAL_DEBUG_ROLLOUT": "1",
+        "PYTHONPATH": "${workspaceFolder}:${env:PYTHONPATH}",
+        "PYTHONUNBUFFERED": "1"
+      }
+    },
+    {
       "name": "GSM8K GRPO (Volcano 2GPU, 4 steps)",
       "type": "debugpy",
       "request": "launch",
