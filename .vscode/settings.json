@@ -1,4 +1,4 @@
 {
   // Rollout worker debugpy port (shared by launch.json Launch + Attach).
-  "areal.rolloutDebugPort": 5678
+  "areal.rolloutDebugPort": 5679
 }

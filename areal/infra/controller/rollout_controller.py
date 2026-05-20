@@ -978,7 +978,7 @@ class RolloutController:
             self.data_generator, batch_size=dataloader.batch_size, dynamic_bs=dynamic_bs
         )
 
-        # Return list of trajectories
+        # Return list of trajectories; 如果要查看奖励：trajectories[0]['rewards'].to_local().item()
         trajectories = [r.trajectory if r is not None else None for r in results]
         return [t for t in trajectories if t is not None]
 

@@ -40,7 +40,7 @@
       ],
       "env": {
         "CUDA_VISIBLE_DEVICES": "0,1",
-        "AREAL_DEBUG_ROLLOUT": "1",
+        "AREAL_DEBUG_ROLLOUT": "0",
         "AREAL_DEBUG_ROLLOUT_PORT": "${config:areal.rolloutDebugPort}",
         "PYTHONPATH": "${workspaceFolder}:${env:PYTHONPATH}",
         "PYTHONUNBUFFERED": "1"
